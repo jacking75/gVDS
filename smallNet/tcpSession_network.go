@@ -30,7 +30,7 @@ func (session *tcpSession) handleTCPReceive(maxPacketSize int,
 	tcpConn := session.getSocket()
 
 	for {
-		receiveBuff, _ := session._recvBuffer.getWriteBuffer(maxPacketSize)
+		receiveBuff := session._recvBuffer.getWriteBuffer(maxPacketSize)
 		recvBytes, err := tcpConn.Read(receiveBuff)
 		if recvBytes == 0 {
 			return sessionCloseCloseRemote

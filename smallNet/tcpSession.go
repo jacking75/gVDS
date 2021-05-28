@@ -149,3 +149,11 @@ func (session *tcpSession) _setStateConnect() {
 	session._isTcpConnected = true
 }
 
+func (session *tcpSession) getWBuffer(requiredSize int) []byte {
+	return session._sendBuffer.getWriteBuffer(requiredSize)
+}
+
+func (session *tcpSession) wBufferAheadWRCursor(size int) {
+	session._sendBuffer.aheadWRCursor(size)
+}
+

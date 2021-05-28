@@ -25,34 +25,12 @@ type Header struct {
 	PacketType int8 // 비트 필드로 데이터 설정. 0 이면 Normal, 1번 비트 On(압축), 2번 비트 On(암호화)
 }
 
-type Packet struct {
-	UserSessionIndex    int32
-	UserSessionUniqueId uint64
-	RoomNumber          int32
-	UserID []byte
-
-	Id       int16
-	DataSize int16
-	Data     []byte
-}
-
-func (packet Packet) GetSessionInfo() (int32, uint64) {
-	return packet.UserSessionIndex, packet.UserSessionUniqueId
-}
-
 var _clientSessionHeaderSize int16
 var _ServerSessionHeaderSize int16
 
 func Init_packet() {
 	_clientSessionHeaderSize = protocolInitHeaderSize()
 	_ServerSessionHeaderSize = protocolInitHeaderSize()
-}
-
-func ClientHeaderSize() int16 {
-	return _clientSessionHeaderSize
-}
-func ServerHeaderSize() int16 {
-	return _ServerSessionHeaderSize
 }
 
 func protocolInitHeaderSize() int16 {
@@ -69,7 +47,7 @@ func PeekPacketID(rawData []byte) int16 {
 
 // 보디데이터의 참조만 가져간다
 func PeekPacketBody(rawData []byte) (bodySize int16, refBody []byte) {
-	headerSize := ClientHeaderSize()
+	headerSize := _clientSessionHeaderSize
 	totalSize := int16(binary.LittleEndian.Uint16(rawData))
 	bodySize = totalSize - headerSize
 
@@ -99,29 +77,29 @@ func EncodingPacketHeader(writer *RawBinaryData, totalSize int16, pktId int16, p
 // [[[ 로그인 ]]] PACKET_ID_LOGIN_REQ
 type LoginReqPacket struct {
 	UserID []byte
-	PassWD []byte
+	AUthCode uint64
 }
 
 func (loginReq LoginReqPacket) EncodingPacket() ([]byte, int16) {
-	totalSize := _clientSessionHeaderSize + MAX_USER_ID_BYTE_LENGTH + MAX_USER_PW_BYTE_LENGTH
+	totalSize := _clientSessionHeaderSize + MAX_USER_ID_BYTE_LENGTH + 8
 	sendBuf := make([]byte, totalSize)
 
 	writer := MakeBWriter(sendBuf, true)
 	EncodingPacketHeader(&writer, totalSize, PACKET_ID_LOGIN_REQ, 0)
 	writer.WriteBytes(loginReq.UserID[:])
-	writer.WriteBytes(loginReq.PassWD[:])
+	writer.WriteU64(loginReq.AUthCode)
 	return sendBuf, totalSize
 }
 
 func (loginReq *LoginReqPacket) Decoding(bodyData []byte) bool {
-	bodySize := MAX_USER_ID_BYTE_LENGTH + MAX_USER_PW_BYTE_LENGTH
+	bodySize := MAX_USER_ID_BYTE_LENGTH + 8
 	if len(bodyData) != bodySize {
 		return false
 	}
 
 	reader := MakeBReader(bodyData, true)
 	loginReq.UserID = reader.ReadBytes(MAX_USER_ID_BYTE_LENGTH)
-	loginReq.PassWD = reader.ReadBytes(MAX_USER_PW_BYTE_LENGTH)
+	loginReq.AUthCode, _ = reader.ReadU64()
 	return true
 }
 
@@ -130,14 +108,13 @@ type LoginResPacket struct {
 	Result int16
 }
 
-func (loginRes LoginResPacket) EncodingPacket() ([]byte, int16) {
+func (loginRes LoginResPacket) EncodingPacket(sendBuf []byte) ([]byte, int16) {
 	totalSize := _clientSessionHeaderSize + 2
-	sendBuf := make([]byte, totalSize)
 
 	writer := MakeBWriter(sendBuf, true)
 	EncodingPacketHeader(&writer, totalSize, PACKET_ID_LOGIN_RES, 0)
 	writer.WriteS16(loginRes.Result)
-	return sendBuf, totalSize
+	return sendBuf[:totalSize], totalSize
 }
 
 

@@ -31,7 +31,7 @@ func (mgr *tcpClientSessionManager) stop() {
 }
 
 func (mgr *tcpClientSessionManager) sendPacket(sessionIndex int, sendData []byte) bool {
-	session, result := mgr._findSession(sessionIndex)
+	session, result := mgr.findSession(sessionIndex)
 	if result == false || session.enableSend() == false {
 		return false
 	}
@@ -52,7 +52,7 @@ func (mgr *tcpClientSessionManager) sendPacketAllClient(sendData []byte) {
 }
 
 func (mgr *tcpClientSessionManager) forceDisconnectClient(sessionIndex int) {
-	session, result := mgr._findSession(sessionIndex)
+	session, result := mgr.findSession(sessionIndex)
 	if result == false || session.enableSend() == false {
 		return
 	}
@@ -61,7 +61,7 @@ func (mgr *tcpClientSessionManager) forceDisconnectClient(sessionIndex int) {
 }
 
 func (mgr *tcpClientSessionManager) disablePacketProcessClient(sessionIndex int) {
-	session, result := mgr._findSession(sessionIndex)
+	session, result := mgr.findSession(sessionIndex)
 	if result == false || session.enableSend() == false {
 		return
 	}
@@ -107,7 +107,7 @@ func (mgr *tcpClientSessionManager) _validIndex(index int) bool {
 	return true
 }
 
-func (mgr *tcpClientSessionManager) _findSession(sessionIndex int) (*tcpSession, bool) {
+func (mgr *tcpClientSessionManager) findSession(sessionIndex int) (*tcpSession, bool) {
 	if mgr._validIndex(sessionIndex) == false {
 		return nil, false
 	}
@@ -141,7 +141,7 @@ func (mgr *tcpClientSessionManager) newSession(tcpconn *net.TCPConn) int {
 }
 
 func (mgr *tcpClientSessionManager) deleteSession(sessionIndex int) {
-	if session, ret := mgr._findSession(sessionIndex); ret == true {
+	if session, ret := mgr.findSession(sessionIndex); ret == true {
 		session.setDisableSend()
 
 		mgr._decConnectedSessionCount()

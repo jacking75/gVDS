@@ -74,6 +74,21 @@ func (snet *ServrNet) prepareNetMsg_impl(msg NetMsg) NetMsg {
 	return msg
 }
 
+func (snet *ServrNet) GetWBuffer_impl(sessionIndex int, requiredSize int) []byte {
+	if session, ok := snet._tcpSessionManager.findSession(sessionIndex); ok {
+		return session.getWBuffer(requiredSize)
+	} else {
+		return nil
+	}
+}
+
+func (snet *ServrNet) WBufferAheadWCursor_impl(sessionIndex int, size int) {
+	if session, ok := snet._tcpSessionManager.findSession(sessionIndex); ok {
+		session.wBufferAheadWRCursor(size)
+	}
+}
+
+
 func (snet *ServrNet) _startTCPServer() {
 	scommon.LogInfo("[_startTCPServer] - start")
 

@@ -26,15 +26,15 @@ func (c *Client) processTaskReqLogin(reqTask ReqTask) {
 	var res ResTask
 	res.UID = reqTask.UID
 	res.ID = TaskID_ResLogin
-	res.Result = taskResult_None
+	res.Result = TaskResult_Success
 
 	key := redisKey_UserAuth(req.UserID)
 	val, err := c.rc.Get(key).Result()
 	if err != nil {
-		res.Result = taskResult_EmptyAuth
+		res.Result = TaskResult_EmptyAuth
 	} else {
 		if auth, _ := strconv.ParseUint(val, 10, 64); auth != req.AuthCode {
-			res.Result = taskResult_FailAuth
+			res.Result = TaskResult_FailAuth
 		}
 	}
 

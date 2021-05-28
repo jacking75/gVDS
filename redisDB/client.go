@@ -3,6 +3,7 @@ package redisDB
 import (
 	"fmt"
 	"github.com/go-redis/redis"
+	"time"
 )
 
 type Conf struct {
@@ -45,6 +46,7 @@ func (c *Client) Start() {
 func (c *Client) Stop() {
 	fmt.Println("[redisDB.Stop] Start")
 	close(c.onDone)
+	time.Sleep(time.Millisecond * 100)
 	fmt.Println("[redisDB.Stop] End")
 }
 
@@ -66,15 +68,15 @@ LOOP_EXIT:
 
 func (c *Client) connect(address string, pool int) {
 	c.rc = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     address,
 		PoolSize: pool,
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
 
-	if err := c.rc.Ping(); err != nil {
+	/*if err := c.rc.Ping(); err != nil {
 		panic(err)
-	}
+	}*/
 }
 
 func (c *Client) getTaskFunc(packetID int16) func(ReqTask) {

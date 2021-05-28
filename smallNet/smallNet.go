@@ -36,6 +36,14 @@ func (snet *ServrNet) PrepareNetMsg(msg NetMsg) NetMsg {
 	return snet.prepareNetMsg_impl(msg)
 }
 
+func (snet *ServrNet) GetWBuffer(sessionIndex int, requiredSize int) []byte {
+	return snet.GetWBuffer_impl(sessionIndex, requiredSize)
+}
+
+func (snet *ServrNet) WBufferAheadWCursor(sessionIndex int, size int) {
+	snet.WBufferAheadWCursor_impl(sessionIndex, size)
+}
+
 // 지정한 클라이언트를 강제 종료 시킨다
 func (snet *ServrNet) ForceDisconnectClient(sessionIndex int) {
 	snet._tcpSessionManager.forceDisconnectClient(sessionIndex)

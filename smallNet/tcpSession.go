@@ -18,7 +18,6 @@ type tcpSession struct {
 	_isClientSession                bool // 클라이언트 세션 여부
 
 	_recvBuffer *ringBuffer
-	_sendBuffer *ringBuffer
 }
 
 func (session *tcpSession) initialize(index int,
@@ -45,13 +44,6 @@ func (session *tcpSession) initRingBuffer(config NetworkConfig) sessionError {
 		return ringBufferRecvInitFail
 	}
 
-	sendPacketRingBufferMaxSize := config.SendPacketRingBufferMaxSize
-	session._sendBuffer, buffErr = newRingBuffer(sendPacketRingBufferMaxSize, config.MaxPacketSize)
-	if buffErr != err_ringbuffer_none {
-		scommon.LogError(fmt.Sprintf("[initRingBuffer] Send NewPacketRingBuffer. Session(%d), %d", session.getIndex(), buffErr))
-		return ringBufferSendInitFail
-	}
-
 	return netLibErrNone
 }
 
@@ -76,7 +68,6 @@ func (session *tcpSession) clear() {
 	session._tcpConn = nil
 	session._ip = nil
 	session._recvBuffer.reset()
-	session._sendBuffer.reset()
 }
 
 func (session *tcpSession) getIndex() int {
@@ -147,13 +138,5 @@ func (session *tcpSession) isStateConnect() bool {
 
 func (session *tcpSession) _setStateConnect() {
 	session._isTcpConnected = true
-}
-
-func (session *tcpSession) getWBuffer(requiredSize int) []byte {
-	return session._sendBuffer.getWriteBuffer(requiredSize)
-}
-
-func (session *tcpSession) wBufferAheadWRCursor(size int) {
-	session._sendBuffer.aheadWRCursor(size)
 }
 

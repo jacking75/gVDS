@@ -7,28 +7,19 @@ type sessionError int16
 const netLibErrNone = 0
 
 const (
-	sessionErrStart = sessionError(iota) // DUMMY
+	sessionErrStart = sessionError(iota)
 
 	sessionCloseForce
 	sessionCloseAllSession
 	sessionCloseRecvGoroutineEnd
 	sessionCloseForceTerminateRecvGoroutine
-	sessionCloseForceTerminateSendGoroutine
 	sessionCloseCloseRemote
 	sessionCloseSocketError
-	sessionCloseSendChannelIsFull
 	sessionCloseSocketReadTimeout
-	sessionCloseSocketFailCallReadDeadLine
-
 	sessionCloseRecvMakePacketTooLargePacketSize
 	sessionCloseRecvTooSmallData
 	sessionDisablePacketProcess
-	sessionCloseRingBufferErr
-
 	ringBufferRecvInitFail
-	ringBufferSendInitFail
-	ringBufferWriteGatherPacket
-	ringBufferMaxSizeGreaterMaxPacketSize
 )
 
 func (s sessionError) Error() string {
@@ -42,23 +33,13 @@ var _closeCaseMessage = [...]string{
 	sessionCloseAllSession:                  "session close all session",
 	sessionCloseRecvGoroutineEnd:            "session close recv goroutine end",
 	sessionCloseForceTerminateRecvGoroutine: "session close force terminate recv goroutine",
-	sessionCloseForceTerminateSendGoroutine: "session close force terminate send goroutine",
 	sessionCloseCloseRemote:                 "session close - close remote",
 	sessionCloseSocketError:                 "session close socket error",
-	sessionCloseSendChannelIsFull:           "session close send channel is full",
 	sessionCloseSocketReadTimeout:           "session close socket read timeout",
-	sessionCloseSocketFailCallReadDeadLine:  "session close socket fail call read deadline",
-
 	sessionCloseRecvMakePacketTooLargePacketSize: "session close recv make packet too large packet size",
 	sessionCloseRecvTooSmallData:                 "session close recv too small data",
 	sessionDisablePacketProcess:				"session disable packet process",
-	sessionCloseRingBufferErr:                    "session close ring buffer error",
-
 	ringBufferRecvInitFail: "ringBufferRecvInitFail",
-	ringBufferSendInitFail: "ringBufferSendInitFail",
-	ringBufferWriteGatherPacket: "ring buffer write gather packet",
-	ringBufferMaxSizeGreaterMaxPacketSize:     "ring buffer max size greater max packet size",
-
 }
 
 

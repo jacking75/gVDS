@@ -34,7 +34,7 @@ func (svr *Server) packetProcessLogin(user *gameUser, bodyData []byte) int16 {
 	svr.reqTaskChanRef <- reqTask
 
 
-	// 비동기로 답변을 받는다
+	// 동기로 답변을 받는다
 	resTask := <- svr.resTaskChan
 
 	if resTask.Result != redisDB.TaskResult_Success {
@@ -46,14 +46,14 @@ func (svr *Server) packetProcessLogin(user *gameUser, bodyData []byte) int16 {
 	return protocol.ERROR_CODE_NONE
 }
 
-func (svr *Server) _sendLoginResponse(sessionIndex int, result int16) {
+func (svr *Server) _sendLoginResponse(user *gameUser, result int16) {
 	res := protocol.LoginResPacket {
 		Result: result,
 	}
 
-	outBuf := svr.serverNet.GetWBuffer(sessionIndex,32)
+	outBuf := user.getBuffer(32)
 	resPkt, resPktSize := res.EncodingPacket(outBuf)
-	svr.serverNet.WBufferAheadWCursor(sessionIndex, int(resPktSize))
+	user.aheadWriteCursor(int(resPktSize))
 
-	svr.serverNet.ISendToClient(sessionIndex, resPkt)
+	svr.serverNet.ISendToClient(user.netIndex(), resPkt)
 }

@@ -129,10 +129,10 @@ func (session *tcpSession) _makePacketAndCallRecvEvent(readAbleByte int,
 	return readPos, netLibErrNone
 }
 
-
-func (session *tcpSession) _realSendData(sendData []byte) bool {
+// tcp에서 단편화가 생기는 것을 막고 싶다면 이 함수를 사용해서 보낸다
+func (session *tcpSession) _realSendData(sendData []byte, maxSize int) bool {
 	conn := session.getSocket()
-	chunkSize := int(1024)
+	chunkSize := maxSize // wan 환경에서는 1024 정도가 적절하다
 	sendDataLen := len(sendData)
 
 	for i := 0; i < sendDataLen; i += chunkSize {

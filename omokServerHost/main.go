@@ -10,48 +10,45 @@ import (
 	"omokServer"
 )
 
+
+
 func main() {
 	ctx, done := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer done()
 
-	conf := createConfig()
+	conf := createHostConf()
 
-	redisC := createRedis()
+	redisC := createRedis(conf)
 	redisC.Start()
 
-	omokServ := omokServer.Server{}
-	omokServ.Init(conf, redisC.ReqTaskChan)
-	omokServ.StartServer()
+	omokServerList := make([]*omokServer.Server, conf.maxGameCount)
+	for i := 0; i < conf.maxGameCount; i++ {
+		omokServ := new(omokServer.Server)
+		omokServ.Init(conf.startTcpPort, conf.omokConf, redisC.ReqTaskChan)
+		omokServ.StartServer()
+
+		omokServerList[i] = omokServ
+	}
 
 	fmt.Println("Waiting for SIGINT.")
 	<-ctx.Done()
 
-	fmt.Println("We are done here.")
-	omokServ.Stop()
+
+	for i := 0; i < conf.maxGameCount; i++ {
+		omokServerList[i].Stop()
+	}
+
 	redisC.Stop()
 
 	fmt.Println("END")
 }
 
-func createConfig() omokServer.OmokConf {
-	conf := omokServer.OmokConf{}
-	conf.Network = "tcp4"
-	conf.BindAddress = ":11021"
-	conf.MaxSessionCount = 32
-	conf.MaxPacketSize = 1024
-	conf.RecvPacketRingBufferMaxSize = 1024 * 16
-	conf.SendPacketRingBufferMaxSize = 1024 * 16
-	conf.MaxNetMsgChanBufferCount = 128
-
-	return conf
-}
-
-func createRedis() *redisDB.Client {
+func createRedis(hconf hostConf) *redisDB.Client {
 	conf := redisDB.Conf{
-		Address: "127.0.0.1:6379",
-		PoolSize: 8,
-		ReqTaskChanCapacity: 128,
-		ResTaskChanCapacity: 128,
+		Address: hconf.RedisAddress,
+		PoolSize: hconf.RedisPoolSize,
+		ReqTaskChanCapacity: hconf.RedisReqTaskChanCapacity,
+		ResTaskChanCapacity: hconf.RedisResTaskChanCapacity,
 	}
 
 	client := new(redisDB.Client)

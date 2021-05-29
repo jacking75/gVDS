@@ -11,9 +11,8 @@ func (svr *Server) packetProcessLogin(user *gameUser, bodyData []byte) int16 {
 	var reqPkt protocol.LoginReqPacket
 	reqPkt.Decoding(bodyData)
 
-	//TODO 이미 로그인한 유저인지 체크한다
 	if user.isEnableLogin() == false {
-		return	1
+		return protocol.ERROR_CODE_LOGIN_USER_ALREADY
 	}
 
 	userID := string(bytes.Trim(reqPkt.UserID[:], "\x00"))

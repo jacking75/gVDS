@@ -31,7 +31,11 @@ type Server struct {
 func (svr *Server) Init(port int, conf OmokConf, reqTaskChan chan redisDB.ReqTask) {
 	svr.conf = conf
 	svr._port = port
+
 	svr._userMgr = newGameUserManager()
+	svr._userMgr.setDisableSendClient = svr._serverNet.SetDisableSendClient
+	svr._userMgr.netSend = svr._serverNet.ISendToClient
+
 	svr.settingPacketFunction()
 
 	svr._reqTaskChanRef = reqTaskChan

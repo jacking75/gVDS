@@ -110,7 +110,11 @@ func (session *tcpSession) setDisableSend() {
 	session._isEnableSend = false
 }
 
-func (session *tcpSession) enableSend() bool {
+func (session *tcpSession) setEnableSend() {
+	session._isEnableSend = true
+}
+
+func (session *tcpSession) isEnableSend() bool {
 	return session._isTcpConnected && session._isEnableSend
 }
 

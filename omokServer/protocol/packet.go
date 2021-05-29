@@ -118,6 +118,39 @@ func (loginRes LoginResPacket) EncodingPacket(sendBuf []byte) ([]byte, int16) {
 }
 
 
+
+// [[[ 허트비트 ]]] PACKET_ID_HEARTBEAT_REQ
+type HeartBeatReqPacket struct {
+	Expected int64
+}
+
+func (req HeartBeatReqPacket) EncodingPacket(sendBuf []byte) ([]byte, int16) {
+	totalSize := _clientSessionHeaderSize + 8
+
+	writer := MakeBWriter(sendBuf, true)
+	EncodingPacketHeader(&writer, totalSize, PACKET_ID_HEARTBEAT_REQ, 0)
+	writer.WriteS64(req.Expected)
+	return sendBuf[:totalSize], totalSize
+}
+
+
+type HeartBeatResPacket struct {
+	Expected int64
+}
+
+func (res *HeartBeatResPacket) Decoding(bodyData []byte) bool {
+	bodySize := 8
+	if len(bodyData) != bodySize {
+		return false
+	}
+
+	reader := MakeBReader(bodyData, true)
+	res.Expected, _ = reader.ReadS64()
+	return true
+}
+
+
+
 // [[[  ]]]   PACKET_ID_ERROR_NTF
 type ErrorNtfPacket struct {
 	ErrorCode int16

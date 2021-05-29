@@ -42,8 +42,16 @@ func (snet *ServrNet) ForceDisconnectClient(sessionIndex int) {
 }
 
 // 지정한 클라이언트의 패킷 처리를 중단 시킨다.
-func (snet *ServrNet) DisablePacketProcessClient(sessionIndex int) {
+func (snet *ServrNet) SetDisablePacketProcessClient(sessionIndex int) {
 	snet._tcpSessionManager.disablePacketProcessClient(sessionIndex)
+}
+
+func (snet *ServrNet) SetDisableSendClient(sessionIndex int) {
+	snet._tcpSessionManager.setDisableSend(sessionIndex)
+}
+
+func (snet *ServrNet) SetEnableSendClient(sessionIndex int) {
+	snet._tcpSessionManager.SetEnableSend(sessionIndex)
 }
 
 

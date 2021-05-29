@@ -38,6 +38,7 @@ func (svr *Server) settingPacketFunction() {
 	svr._funcPackeIdlist = make([]int16, 0, maxFuncListCount)
 
 	svr._addPacketFunction(protocol.PACKET_ID_LOGIN_REQ, svr.packetProcessLogin)
+	svr._addPacketFunction(protocol.PACKET_ID_HEARTBEAT_RES, svr.packetProcessHeartBeat)
 }
 
 func (svr *Server) _addPacketFunction(packetID int16,

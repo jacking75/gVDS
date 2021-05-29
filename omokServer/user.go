@@ -1,6 +1,9 @@
 package omokServer
 
-import "scommon"
+import (
+	"omokServer/protocol"
+	"scommon"
+)
 
 type userConf struct {
 	userSendBufferSzie int
@@ -18,9 +21,11 @@ type gameUser struct {
 
 	_heartbeatNextReqTimeMSec int64
 	_heartbeatResValue        int64
-	_heartbeatResEndTimeMsec  int64
+	_heartbeatResEndTimeMSec  int64
 
 	_sendBuffer *sendRingBuffer
+
+	netSend func(int, []byte) bool
 }
 
 func newGameUser(sessionIndex int, UID uint64, conf userConf) *gameUser {
@@ -32,7 +37,7 @@ func newGameUser(sessionIndex int, UID uint64, conf userConf) *gameUser {
 
 	user._heartbeatNextReqTimeMSec = scommon.NextUnixMillSec(conf.heartbeatReqIntervalTimeMSec)
 	user._heartbeatResValue = 0
-	user._heartbeatResEndTimeMsec = 0
+	user._heartbeatResEndTimeMSec = 0
 	return user
 }
 
@@ -55,4 +60,45 @@ func (u *gameUser) getBuffer(requiredSize int) []byte {
 
 func (u *gameUser) aheadWriteCursor(size int) {
 	u._sendBuffer.aheadWriteCursor(size)
+}
+
+func (u *gameUser) isOverTimeHeartbeatResEndTime(curTime int64) bool {
+	if u._heartbeatResEndTimeMSec != 0 && u._heartbeatResEndTimeMSec <= curTime {
+		return true
+	}
+	return false
+}
+
+func (u *gameUser) enableHeartbeatReqTime(curTime int64) bool {
+	if u._heartbeatNextReqTimeMSec <= curTime {
+		return true
+	}
+	return false
+}
+
+func (u *gameUser) sendHeartBeatRes(expected int64) {
+	req := protocol.HeartBeatReqPacket {
+		Expected: expected,
+	}
+
+	outBuf := u.getBuffer(16)
+	reqPkt, reqPktSize := req.EncodingPacket(outBuf)
+	u.aheadWriteCursor(int(reqPktSize))
+	u.netSend(u.netIndex(), reqPkt)
+
+	u._heartbeatResEndTimeMSec = scommon.NextUnixMillSec(u.conf.heartbeatWaitTimeMSec)
+	u._heartbeatResValue = expected
+	u._heartbeatNextReqTimeMSec = 0
+}
+
+func (u *gameUser) checkHeartBeat(expected int64) bool {
+	if expected < 1 || expected != u._heartbeatResValue {
+		return false
+	}
+
+	u._heartbeatResEndTimeMSec = 0
+	u._heartbeatResValue = 0
+	u._heartbeatNextReqTimeMSec = scommon.NextUnixMillSec(u.conf.heartbeatReqIntervalTimeMSec)
+
+	return true
 }

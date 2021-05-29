@@ -1,6 +1,11 @@
 package omokServer
 
-import "sync/atomic"
+import (
+	"math/rand"
+	"scommon"
+	"sync/atomic"
+	"time"
+)
 
 
 
@@ -8,12 +13,19 @@ type gameUserManager struct {
 	_users map[int]*gameUser
 
 	_seqNumber uint64
+
+	_heartBeatRand *rand.Rand
+
+	setDisableSendClient func(int)
+	netSend func(int, []byte) bool
 }
 
 func newGameUserManager() *gameUserManager {
 	userMgr := new(gameUserManager)
 	userMgr._users = make(map[int]*gameUser)
 
+	s := rand.NewSource(time.Now().UnixNano())
+	userMgr._heartBeatRand = rand.New(s)
 	return userMgr
 }
 
@@ -29,6 +41,7 @@ func (mgr *gameUserManager) addUser(sessionIndex int, conf userConf) bool {
 	}
 
 	user := newGameUser(sessionIndex, mgr.createUID(), conf)
+	user.netSend = mgr.netSend
 
 	mgr._users[sessionIndex] = user
 	return true
@@ -47,10 +60,32 @@ func (mgr *gameUserManager) GetUser(sessionIndex int) (*gameUser, bool) {
 }
 
 func (mgr *gameUserManager) checkUserState() {
-	//TODO 접속된 유저들의 상태를 조사한다
+	curTime := scommon.CurrentUnixMillSec()
 
-	//TODO 허트비트 구현하기.
-	// 서버에서 랜던 값을 보내면 클라는 이것보다 1 큰 값을 보내야 한다.
-	// 허트비트가 오지 않으면 네트워크 동작을 멈춘다.
-	// 유저에게 보내는 send를 고루틴으로 만들지 않기 때문에 특정 유저가 send 버퍼가 다 차서 보내지 못하면 블럭킹이 발생한다. 이것을 방지하기 위해서 허트비트는 필수이다.
+	for _, user := range mgr._users {
+		if mgr.checkHeartBeat(user, curTime) {
+			continue
+		}
+	}
+}
+
+func (mgr *gameUserManager) checkHeartBeat(user *gameUser, curTime int64) bool {
+	// 허트 비트 조사
+	if user.isOverTimeHeartbeatResEndTime(curTime) {
+		//구현 하지 않았지만 클라이언트에게 send를 보내지 않게 했으면 애플리케이션에서 이 클라이언트에게 보내는 패킷을 따로 저장하고 있다가 send 가능하게 되면(허트비트 응답을 받으면) 저장하고 있던 데이터를 다 보내도록 한다
+		mgr.setDisableSendClient(user.netIndex())
+
+		scommon.LogInfo("isOverTimeHeartbeatResEndTime")
+		return true
+	}
+
+	if user.enableHeartbeatReqTime(curTime) {
+		expected := mgr._heartBeatRand.Int63()
+		user.sendHeartBeatRes(expected)
+
+		scommon.LogDebug("sendHeartBeatRes")
+		return true
+	}
+
+	return false
 }

@@ -32,7 +32,7 @@ func (mgr *tcpClientSessionManager) stop() {
 
 func (mgr *tcpClientSessionManager) sendPacket(sessionIndex int, sendData []byte) bool {
 	session, result := mgr.findSession(sessionIndex)
-	if result == false || session.enableSend() == false {
+	if result == false || session.isEnableSend() == false {
 		return false
 	}
 
@@ -43,7 +43,7 @@ func (mgr *tcpClientSessionManager) sendPacket(sessionIndex int, sendData []byte
 func (mgr *tcpClientSessionManager) sendPacketAllClient(sendData []byte) {
 	for i := 0; i < mgr._maxSessionCount; i++ {
 		session := mgr._sessionList[i]
-		if session.enableSend() == false {
+		if session.isEnableSend() == false {
 			continue
 		}
 
@@ -53,7 +53,7 @@ func (mgr *tcpClientSessionManager) sendPacketAllClient(sendData []byte) {
 
 func (mgr *tcpClientSessionManager) forceDisconnectClient(sessionIndex int) {
 	session, result := mgr.findSession(sessionIndex)
-	if result == false || session.enableSend() == false {
+	if result == false || session.isEnableSend() == false {
 		return
 	}
 
@@ -62,12 +62,25 @@ func (mgr *tcpClientSessionManager) forceDisconnectClient(sessionIndex int) {
 
 func (mgr *tcpClientSessionManager) disablePacketProcessClient(sessionIndex int) {
 	session, result := mgr.findSession(sessionIndex)
-	if result == false || session.enableSend() == false {
+	if result == false || session.isEnableSend() == false {
 		return
 	}
 
 	session.disablePacketProcess()
 }
+
+func (mgr *tcpClientSessionManager) setDisableSend(sessionIndex int) {
+	if session, result := mgr.findSession(sessionIndex); result {
+		session.setDisableSend()
+	}
+}
+
+func (mgr *tcpClientSessionManager) SetEnableSend(sessionIndex int) {
+	if session, result := mgr.findSession(sessionIndex); result {
+		session.setEnableSend()
+	}
+}
+
 
 func (mgr *tcpClientSessionManager) _initialize(config NetworkConfig) {
 	mgr._netConf = config

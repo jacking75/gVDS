@@ -12,16 +12,16 @@ func (svr *Server) Process_goroutine() {
 	timeTicker := time.NewTicker(time.Millisecond * 100)
 
 	defer timeTicker.Stop()
-	defer svr.serverNet.Stop()
+	defer svr._serverNet.Stop()
 
 LOOP:
 	for {
 		select {
 		case _ = <-timeTicker.C:
-			svr.userMgr.checkUserState()
-		case netMsg := <-svr.serverNet.GetNetMsg():
+			svr._userMgr.checkUserState()
+		case netMsg := <-svr._serverNet.GetNetMsg():
 			svr.processNetMsg(netMsg)
-		case  <-svr.onStopNetMsgProcess:
+		case  <-svr._onStopNetMsgProcess:
 			break LOOP
 		}
 	}
@@ -30,7 +30,7 @@ LOOP:
 }
 
 func (svr *Server) processNetMsg(netMsg smallNet.NetMsg) {
-	msg := svr.serverNet.PrepareNetMsg(netMsg)
+	msg := svr._serverNet.PrepareNetMsg(netMsg)
 
 	switch msg.Type {
 	case smallNet.NetMsg_Receive:
@@ -44,11 +44,11 @@ func (svr *Server) processNetMsg(netMsg smallNet.NetMsg) {
 			heartbeatReqIntervalTimeMSec: int64(svr.conf.HeartbeatReqIntervalTimeMSec),
 			heartbeatWaitTimeMSec: int64(svr.conf.HeartbeatWaitTimeMSec),
 		}
-		svr.userMgr.addUser(msg.SessionIndex, conf)
+		svr._userMgr.addUser(msg.SessionIndex, conf)
 	case smallNet.NetMsg_Close:
 		scommon.LogDebug("OnClose")
 
-		svr.userMgr.removeUser(msg.SessionIndex)
+		svr._userMgr.removeUser(msg.SessionIndex)
 	default:
 		scommon.LogDebug("[Process_goroutine] none")
 	}

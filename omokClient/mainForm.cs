@@ -83,20 +83,13 @@ namespace omokClient
 
         void PacketProcess(Int16 packetID, byte[] packetBody)
         { 
-            if(packetID == (Int16)PacketID.RESPONSE_BATTLE_WATCHING)
+            if(packetID == (Int16)PacketID.PACKET_ID_LOGIN_RES)
             {
-                var res = new BattleWatchingResPacket();
+                var res = new LoginResPacket();
                 res.FromBytes(packetBody);
 
                 UILogger.Write($"[PacketProcess - RESPONSE_BATTLE_WATCHING] Result: {res.Result}");
-            }
-            else if (packetID == (Int16)PacketID.RESPONSE_BATTLE_WATCHING_END)
-            {
-                var res = new BattleWatchingEndResPacket();
-                res.FromBytes(packetBody);
-
-                UILogger.Write($"[PacketProcess - RESPONSE_BATTLE_WATCHING_END] Result: {res.Result}");
-            }
+            }            
             else
             {
                 UILogger.Write($"Unknown Packet ID: {packetID}");
@@ -204,7 +197,7 @@ namespace omokClient
 
        
        
-        // SubProxy Server에 연결
+        // Server에 연결
         private void button6_Click(object sender, EventArgs e)
         {
             string address = textBoxIP.Text;
@@ -225,7 +218,7 @@ namespace omokClient
             }
         }
 
-        // SubProxy Server에 끊기
+        // Server 끊기
         private void button5_Click(object sender, EventArgs e)
         {
             UILogger.Write("서버에 접속 끊기 요청", LOG_LEVEL.INFO);
@@ -233,32 +226,20 @@ namespace omokClient
             SetDisconnectd();
             Network.Close();
         }
-
-        // 배틀 관전 요청
-        private void button7_Click(object sender, EventArgs e)
+             
+        // 로그인 요청
+        private void button1_Click(object sender, EventArgs e)
         {
-            var request = new BattleWatchingReqPacket
+            var request = new LoginReqPacket
             {
-                CompetitionCode = UInt64.Parse(textBox6.Text),
-                BattleCode = UInt64.Parse(textBox5.Text),
-                UserID = textBox4.Text,
-                AuthCode = UInt64.Parse(textBox7.Text),
-                StartFrameIndex = UInt32.Parse(textBox8.Text),
+                UserID = textBox1.Text,
+                AuthCode = UInt64.Parse(textBox2.Text)                
             };
 
-            var packetData = request.ToBytes(PacketID.REQUEST_BATTLE_WATCHING);
+            var packetData = request.ToBytes(PacketID.PACKET_ID_LOGIN_REQ);
             SendPacketToSubProxyServer(packetData);
 
-            UILogger.Write($"[관전 요청]  CompetitionCode:{request.CompetitionCode}, BattleCode:{request.BattleCode}", LOG_LEVEL.INFO);
-        }
-
-        // 관전 종료 요청
-        private void button8_Click(object sender, EventArgs e)
-        {
-            var packetData = NoneBodyPacket.ToBytes(PacketID.REQUEST_BATTLE_WATCHING_END);
-            SendPacketToSubProxyServer(packetData);
-
-            UILogger.Write("[관전 종료 요청]", LOG_LEVEL.INFO);
+            UILogger.Write($"[로그인 요청] UserID:{request.UserID}, AuthCode:{request.AuthCode}", LOG_LEVEL.INFO);
         }
     }
 }

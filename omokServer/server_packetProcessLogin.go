@@ -16,7 +16,7 @@ func (svr *Server) packetProcessLogin(user *gameUser, bodyData []byte) int16 {
 		return	1
 	}
 
-	userID := string(reqPkt.UserID)
+	userID := string(bytes.Trim(reqPkt.UserID[:], "\x00"))
 
 	reqTaskBody := redisDB.ReqTaskLogin {
 		UserID: userID,
@@ -26,27 +26,27 @@ func (svr *Server) packetProcessLogin(user *gameUser, bodyData []byte) int16 {
 	_ = gob.NewEncoder(buf).Encode(&reqTaskBody)
 
 	reqTask := redisDB.ReqTask {
-		ResChan: svr.resTaskChan,
-		UID: user.UID,
+		ResChan: svr._resTaskChan,
+		UID: user._uid,
 		ID: redisDB.TaskID_ReqLogin,
 		Data: buf.Bytes(),
 	}
-	svr.reqTaskChanRef <- reqTask
+	svr._reqTaskChanRef <- reqTask
 
 
 	// 동기로 답변을 받는다
-	resTask := <- svr.resTaskChan
+	resTask := <- svr._resTaskChan
 
-	if resTask.Result != redisDB.TaskResult_Success {
-
-	} else {
-
+	if resTask.Result == redisDB.TaskResult_Success {
+		user.setAuth(userID)
 	}
+
+	_sendLoginResponse(svr, user, resTask.Result)
 
 	return protocol.ERROR_CODE_NONE
 }
 
-func (svr *Server) _sendLoginResponse(user *gameUser, result int16) {
+func _sendLoginResponse(svr *Server, user *gameUser, result int16) {
 	res := protocol.LoginResPacket {
 		Result: result,
 	}
@@ -55,5 +55,5 @@ func (svr *Server) _sendLoginResponse(user *gameUser, result int16) {
 	resPkt, resPktSize := res.EncodingPacket(outBuf)
 	user.aheadWriteCursor(int(resPktSize))
 
-	svr.serverNet.ISendToClient(user.netIndex(), resPkt)
+	svr._serverNet.ISendToClient(user.netIndex(), resPkt)
 }

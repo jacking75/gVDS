@@ -30,15 +30,16 @@ func (session *tcpSession) handleTCPReceive(maxPacketSize int,
 	tcpConn := session.getSocket()
 
 	for {
-		receiveBuff := session._recvBuffer.getWriteBuffer(maxPacketSize)
+		receiveBuff := session._recvBuffer.getBuffer(maxPacketSize)
 		recvBytes, err := tcpConn.Read(receiveBuff)
 		if recvBytes == 0 {
 			return sessionCloseCloseRemote
 		} else if serr := _checkReceiveError(session.getIndex(), err); serr != netLibErrNone {
 			return serr
-		} else {
-			session._recvBuffer.aheadWriteCursor(recvBytes)
 		}
+
+
+		session._recvBuffer.aheadWriteCursor(recvBytes)
 
 		var dataBuff, readAbleByte = session._recvBuffer.readAbleBuffer()
 		if serr := session._checkReadAfterEnablePacket(int16(readAbleByte), packetHeaderSize);
@@ -130,7 +131,7 @@ func (session *tcpSession) _makePacketAndCallRecvEvent(readAbleByte int,
 }
 
 // tcp에서 단편화가 생기는 것을 막고 싶다면 이 함수를 사용해서 보낸다
-func (session *tcpSession) _realSendData(sendData []byte, maxSize int) bool {
+func (session *tcpSession) SendAutoDivisionData(sendData []byte, maxSize int) bool {
 	conn := session.getSocket()
 	chunkSize := maxSize // wan 환경에서는 1024 정도가 적절하다
 	sendDataLen := len(sendData)

@@ -1,9 +1,9 @@
 package omokServer
 
 type sendRingBuffer struct {
-	data          []byte
-	allocSize     int // data의 실제 할당 크기
-	writeCursor   int
+	_data        []byte
+	_allocSize   int // data의 실제 할당 크기
+	_writeCursor int
 }
 
 // 링버퍼를 한바퀴 돌 때 앞에 데이터를 다 사용했는지 체크 하지 않는다. 즉 낙관적이다
@@ -14,26 +14,26 @@ func newSendBuffer(maxSize int) *sendRingBuffer {
 	}
 
 	b := &sendRingBuffer{
-		allocSize:     maxSize,
-		data:          make([]byte, maxSize),
-		writeCursor:   0,
+		_allocSize:   maxSize,
+		_data:        make([]byte, maxSize),
+		_writeCursor: 0,
 	}
 	return b
 }
 
 func (b *sendRingBuffer) reset() {
-	b.writeCursor = 0
+	b._writeCursor = 0
 }
 
 func (b *sendRingBuffer) getBuffer(requiredSize int) []byte {
-	remain := b.allocSize - b.writeCursor
+	remain := b._allocSize - b._writeCursor
 	if remain < requiredSize {
-		b.writeCursor = 0
+		b._writeCursor = 0
 	}
 
-	return b.data[b.writeCursor:]
+	return b._data[b._writeCursor:]
 }
 
 func (b *sendRingBuffer) aheadWriteCursor(size int) {
-	b.writeCursor += size
+	b._writeCursor += size
 }

@@ -12,10 +12,10 @@ func (svr *Server) packetProcess(sessionIndex int, packetData []byte) {
 	_, bodyData := protocol.PeekPacketBody(packetData)
 
 	if pfunc := svr.getPacketFunc(packetID); pfunc != nil {
-		if user, ok := svr.userMgr.GetUser(sessionIndex); ok {
+		if user, ok := svr._userMgr.GetUser(sessionIndex); ok {
 			pfunc(user, bodyData)
 		} else {
-			scommon.LogError(fmt.Sprintf("[packetProcess] invalid User. sessionIndex: %d", sessionIndex))
+			scommon.LogError(fmt.Sprintf("[packetProcess] invalid User. _sessionIndex: %d", sessionIndex))
 		}
 	} else {
 		scommon.LogError(fmt.Sprintf("[packetProcess] invalid packetID: %d", packetID))

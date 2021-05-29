@@ -2,42 +2,44 @@ package omokServer
 
 import "sync/atomic"
 
-var _seqNumber uint64
 
-func SeqNumIncrement() uint64 {
-	newValue := atomic.AddUint64(&_seqNumber, 1)
-	return newValue
-}
 
 type gameUserManager struct {
-	users map[int]*gameUser
+	_users map[int]*gameUser
+
+	_seqNumber uint64
 }
 
 func newGameUserManager() *gameUserManager {
 	userMgr := new(gameUserManager)
-	userMgr.users = make(map[int]*gameUser)
+	userMgr._users = make(map[int]*gameUser)
 
 	return userMgr
 }
 
+func (mgr *gameUserManager) createUID() uint64 {
+	newValue := atomic.AddUint64(&mgr._seqNumber, 1)
+	return newValue
+}
+
 func (mgr *gameUserManager) addUser(sessionIndex int, conf userConf) bool {
-	_, exists := mgr.users[sessionIndex]
+	_, exists := mgr._users[sessionIndex]
 	if exists {
 		return false
 	}
 
-	user := newGameUser(sessionIndex, SeqNumIncrement(), conf)
+	user := newGameUser(sessionIndex, mgr.createUID(), conf)
 
-	mgr.users[sessionIndex] = user
+	mgr._users[sessionIndex] = user
 	return true
 }
 
 func (mgr *gameUserManager) removeUser(sessionIndex int) {
-	delete(mgr.users, sessionIndex)
+	delete(mgr._users, sessionIndex)
 }
 
 func (mgr *gameUserManager) GetUser(sessionIndex int) (*gameUser, bool) {
-	user, exists := mgr.users[sessionIndex]
+	user, exists := mgr._users[sessionIndex]
 	if exists {
 		return user, true
 	}

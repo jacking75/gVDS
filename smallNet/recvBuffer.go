@@ -46,7 +46,7 @@ func (b *ringBuffer) reset() {
 	b._readCursor = 0
 }
 
-func (b *ringBuffer) getWriteBuffer(requiredSize int) []byte {
+func (b *ringBuffer) getBuffer(requiredSize int) []byte {
 	remain := b._allocSize - b._writeCursor
 	if remain < requiredSize {
 		readsize := b._writeCursor - b._readCursor

@@ -9,49 +9,50 @@ type userConf struct {
 }
 
 type gameUser struct {
-	sessionIndex int
-	UID uint64
-	ID string
-	isAuth bool
+	_sessionIndex int
+	_uid          uint64
+	_id           string
+	_isAuth       bool
 
 	conf userConf
 
-	heartbeatNextReqTimeMSec int64
-	heartbeatResValue int64
-	heartbeatResEndTimeMsec int64
+	_heartbeatNextReqTimeMSec int64
+	_heartbeatResValue        int64
+	_heartbeatResEndTimeMsec  int64
 
-	sendBuffer *sendRingBuffer
+	_sendBuffer *sendRingBuffer
 }
 
 func newGameUser(sessionIndex int, UID uint64, conf userConf) *gameUser {
 	user := new(gameUser)
 	user.conf = conf
-	user.sessionIndex = sessionIndex
-	user.UID = UID
-	user.sendBuffer = newSendBuffer(conf.userSendBufferSzie)
+	user._sessionIndex = sessionIndex
+	user._uid = UID
+	user._sendBuffer = newSendBuffer(conf.userSendBufferSzie)
 
-	user.heartbeatNextReqTimeMSec = scommon.NextUnixMillSec(conf.heartbeatReqIntervalTimeMSec)
-	user.heartbeatResValue = 0
-	user.heartbeatResEndTimeMsec = 0
+	user._heartbeatNextReqTimeMSec = scommon.NextUnixMillSec(conf.heartbeatReqIntervalTimeMSec)
+	user._heartbeatResValue = 0
+	user._heartbeatResEndTimeMsec = 0
 	return user
 }
 
 func (u *gameUser) netIndex() int {
-	return u.sessionIndex
+	return u._sessionIndex
 }
 
 func (u *gameUser) isEnableLogin() bool {
-	return u.isAuth == false
+	return u._isAuth == false
 }
 
-func (u *gameUser) setAuth() {
-	u.isAuth = true
+func (u *gameUser) setAuth(id string) {
+	u._isAuth = true
+	u._id = id
 }
 
 func (u *gameUser) getBuffer(requiredSize int) []byte {
-	return u.sendBuffer.getBuffer(requiredSize)
+	return u._sendBuffer.getBuffer(requiredSize)
 }
 
 func (u *gameUser) aheadWriteCursor(size int) {
-	u.sendBuffer.aheadWriteCursor(size)
+	u._sendBuffer.aheadWriteCursor(size)
 }

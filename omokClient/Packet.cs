@@ -16,17 +16,12 @@ namespace omokClient
 
 
         #region SubProxyServer
-        CLIENT_BEGIN = 2101,
+        CLIENT_BEGIN = 200,
 
-        REQUEST_BATTLE_WATCHING = 2116,
-        RESPONSE_BATTLE_WATCHING = 2117,
+        PACKET_ID_LOGIN_REQ = 701, 
+        PACKET_ID_LOGIN_RES = 702,
 
-        NOTIFY_BATTLE_PLAY_DATA = 2121,
-
-        REQUEST_BATTLE_WATCHING_END = 2131,
-        RESPONSE_BATTLE_WATCHING_END = 2132,
-
-        CLIENT_END = 2200,
+        CLIENT_END = 1000,
         #endregion
     }
 
@@ -54,7 +49,7 @@ namespace omokClient
     class PacketDef
     {
         public const UInt16 PACKET_HEADER_SIZE = 5;
-        public const int MAX_USER_ID_BYTE_LENGTH = 32;
+        public const int MAX_USER_ID_BYTE_LENGTH = 16;
     }
 
     public class NoneBodyPacket
@@ -70,36 +65,30 @@ namespace omokClient
     }
 
 
-    public class BattleWatchingReqPacket
+    public class LoginReqPacket
     {
-        public UInt64 CompetitionCode;
-        public UInt64 BattleCode;
         public string UserID;
         public UInt64 AuthCode;
-        public UInt32 StartFrameIndex;
-
+        
         public byte[] ToBytes(PacketID packetID)
         {
             var userID = new byte[PacketDef.MAX_USER_ID_BYTE_LENGTH];
             Encoding.UTF8.GetBytes(UserID).CopyTo(userID, 0);
 
-            const int packetSize = PacketDef.PACKET_HEADER_SIZE + 8 + 8 + PacketDef.MAX_USER_ID_BYTE_LENGTH + 8 + 4;
+            const int packetSize = PacketDef.PACKET_HEADER_SIZE + PacketDef.MAX_USER_ID_BYTE_LENGTH + 8;
 
             List<byte> dataSource = new List<byte>();
             dataSource.AddRange(BitConverter.GetBytes((Int16)packetSize));
             dataSource.AddRange(BitConverter.GetBytes((Int16)packetID));
             dataSource.AddRange(BitConverter.GetBytes((SByte)0));
-            dataSource.AddRange(BitConverter.GetBytes(CompetitionCode));
-            dataSource.AddRange(BitConverter.GetBytes(BattleCode));
             dataSource.AddRange(userID);
             dataSource.AddRange(BitConverter.GetBytes(AuthCode));
-            dataSource.AddRange(BitConverter.GetBytes(StartFrameIndex));
             return dataSource.ToArray();
         }
     }
   
-     public class BattleWatchingResPacket
-     {
+     public class LoginResPacket
+    {
          public Int16 Result;
 
          public bool FromBytes(byte[] bodyData)

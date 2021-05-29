@@ -13,40 +13,40 @@ import (
 //TODO 오목 게임 플레이
 
 type Server struct {
-	serverNet *smallNet.ServrNet
-	onStopNetMsgProcess chan struct{}
+	_serverNet           *smallNet.ServrNet
+	_onStopNetMsgProcess chan struct{}
 
-	port int
-	conf OmokConf
+	_port int
+	conf  OmokConf
 
 	_funcPackeIdlist []int16
 	_funclist []func(*gameUser, []byte) int16
 
-	userMgr *gameUserManager
+	_userMgr *gameUserManager
 
-	reqTaskChanRef chan redisDB.ReqTask
-	resTaskChan chan redisDB.ResTask
+	_reqTaskChanRef chan redisDB.ReqTask
+	_resTaskChan    chan redisDB.ResTask
 }
 
 func (svr *Server) Init(port int, conf OmokConf, reqTaskChan chan redisDB.ReqTask) {
 	svr.conf = conf
-	svr.port = port
-	svr.userMgr = newGameUserManager()
+	svr._port = port
+	svr._userMgr = newGameUserManager()
 	svr.settingPacketFunction()
 
-	svr.reqTaskChanRef = reqTaskChan
-	svr.resTaskChan = make(chan redisDB.ResTask, conf.RedisResChanCapacity)
+	svr._reqTaskChanRef = reqTaskChan
+	svr._resTaskChan = make(chan redisDB.ResTask, conf.RedisResChanCapacity)
 }
 
 func (svr *Server) StartServer() {
 	packetHeaderSize := int16(5)
-	svr.serverNet = smallNet.StartNetwork(confToNetConf(svr.port, svr.conf), packetHeaderSize, packetTotalSize)
+	svr._serverNet = smallNet.StartNetwork(confToNetConf(svr._port, svr.conf), packetHeaderSize, packetTotalSize)
 
 	go svr.Process_goroutine()
 }
 
 func (svr *Server) Stop() {
-	svr.serverNet.Stop()
+	svr._serverNet.Stop()
 }
 
 func confToNetConf(port int, conf OmokConf) smallNet.NetworkConfig {

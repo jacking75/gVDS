@@ -130,7 +130,7 @@ func (session *tcpSession) _makePacketAndCallRecvEvent(readAbleByte int,
 	return readPos, netLibErrNone
 }
 
-// tcp에서 단편화가 생기는 것을 막고 싶다면 이 함수를 사용해서 보낸다
+// 큰 데이터를 보낼 때 지정된 청크 크기만큼 나누어서 보낸다(MTU 크기에 맞게 보낼 때 사용하면 좋다)
 func (session *tcpSession) SendAutoDivisionData(sendData []byte, maxSize int) bool {
 	conn := session.getSocket()
 	chunkSize := maxSize // wan 환경에서는 1024 정도가 적절하다

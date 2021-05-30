@@ -7,45 +7,15 @@ using System.Threading.Tasks;
 namespace omokClient
 {
     public enum PacketID
-    {
-        #region PubProxyServer
-        PACKET_ID_BATTLE_START = 1101, 
-        PACKET_ID_BATTLE_GAME_PLAY = 1102, 
-        PACKET_ID_BATTLE_GAME_END = 1103,
-        #endregion
+   {
 
-
-        #region SubProxyServer
-        CLIENT_BEGIN = 200,
+        PACKET_ID_DEV_ECHO = 92,        
 
         PACKET_ID_LOGIN_REQ = 701, 
         PACKET_ID_LOGIN_RES = 702,
-
-        CLIENT_END = 1000,
-        #endregion
     }
 
 
-    #region PubProxyServer
-    public class BattleStartNtfPacket
-    {
-        public UInt64 CompetitionCode;
-        public UInt64 BattleCode;
-
-        public byte[] ToBytes(PacketID packetID)
-        {
-            List<byte> dataSource = new List<byte>();
-            dataSource.AddRange(BitConverter.GetBytes((UInt16)packetID));
-            dataSource.AddRange(BitConverter.GetBytes(CompetitionCode));
-            dataSource.AddRange(BitConverter.GetBytes(BattleCode));
-            return dataSource.ToArray();
-        }
-    }
-    #endregion
-
-
-
-    #region SubProxyServer
     class PacketDef
     {
         public const UInt16 PACKET_HEADER_SIZE = 5;
@@ -99,20 +69,4 @@ namespace omokClient
      }
 
 
-
-    public class BattleWatchingEndReqPacket
-    {
-    }
-
-    public class BattleWatchingEndResPacket
-    {
-        public Int16 Result;
-
-        public bool FromBytes(byte[] bodyData)
-        {
-            Result = BitConverter.ToInt16(bodyData, 0);
-            return true;
-        }
-    }
-    #endregion
 }

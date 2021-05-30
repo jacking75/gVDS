@@ -7,7 +7,6 @@ import (
 	"smallNet"
 )
 
-//TODO redis를 사용한 로그인
 //TODO 들어옴 통보하기. 로그인 하면
 //TODO 나감 통보하기. 로그인 유저가 접속이 끊긴 경우
 //TODO 오목 게임 플레이

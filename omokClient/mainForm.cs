@@ -20,7 +20,7 @@ namespace omokClient
 
         ClientSimpleTcp Network = new ClientSimpleTcp();
         bool IsNetworkThreadRunning = false;
-        System.Threading.Thread NetworkReadThread = null;
+        Thread NetworkReadThread = null;
         PacketBufferManager PacketBuffer = new PacketBufferManager();
         System.Collections.Concurrent.ConcurrentQueue<(Int16, byte[])> ReceivePacketQueue = new();
 
@@ -53,11 +53,9 @@ namespace omokClient
 
             while (IsBackGroundProcessRunning)
             {
-                System.Threading.Thread.Sleep(1);
+                Thread.Sleep(1);
 
-                string msg;
-
-                if (UILogger.GetLog(out msg))
+                if (UILogger.GetLog(out var msg))
                 {
                     ++logWorkCount;
 
@@ -88,9 +86,13 @@ namespace omokClient
                 var res = new LoginResPacket();
                 res.FromBytes(packetBody);
 
-                UILogger.Write($"[PacketProcess - RESPONSE_BATTLE_WATCHING] Result: {res.Result}");
+                UILogger.Write($"[PacketProcess - PACKET_ID_LOGIN_RES] Result: {res.Result}");
             }            
-            else
+            else if (packetID == (Int16)PacketID.PACKET_ID_DEV_ECHO)
+            {
+                UILogger.Write($"[PacketProcess - PACKET_ID_DEV_ECHO]");
+            }
+            else 
             {
                 UILogger.Write($"Unknown Packet ID: {packetID}");
             }
@@ -142,7 +144,7 @@ namespace omokClient
             }
         }
 
-        public void SendPacketToSubProxyServer(byte[] packetData)
+        public void SendPacket(byte[] packetData)
         {
             if (Network.IsConnected() == false)
             {
@@ -226,7 +228,17 @@ namespace omokClient
             SetDisconnectd();
             Network.Close();
         }
-             
+
+
+        // echo
+        private void button2_Click(object sender, EventArgs e)
+        {
+            var packetData = NoneBodyPacket.ToBytes(PacketID.PACKET_ID_DEV_ECHO);
+            SendPacket(packetData);
+
+            UILogger.Write($"[echo 요청]", LOG_LEVEL.INFO);
+        }
+
         // 로그인 요청
         private void button1_Click(object sender, EventArgs e)
         {
@@ -237,9 +249,11 @@ namespace omokClient
             };
 
             var packetData = request.ToBytes(PacketID.PACKET_ID_LOGIN_REQ);
-            SendPacketToSubProxyServer(packetData);
+            SendPacket(packetData);
 
             UILogger.Write($"[로그인 요청] UserID:{request.UserID}, AuthCode:{request.AuthCode}", LOG_LEVEL.INFO);
         }
+
+        
     }
 }

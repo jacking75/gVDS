@@ -5,8 +5,8 @@ import (
 )
 
 type hostConf struct {
-	maxGameCount int
-	startTcpPort int
+	maxGameCount int // 논리적인 게임 서버의 수
+	startTcpPort int // 게임 서버에서 사용할 포트 번호의 시작 수. 순차적으로 1씩 증가시킨다.
 
 	conf echoConf
 }

@@ -10,15 +10,14 @@ import (
 func (session *tcpSession) handleReceive_goroutine(config NetworkConfig,
 										pktRecvfunc PacketReceivceFunctors) {
 	sessionIndex := session.getIndex()
-	maxPacketSize := config.MaxPacketSize
-	scommon.LogDebug(fmt.Sprintf("[handleClientTCPReceive goroutine] Start. Session( %d )", sessionIndex))
+	scommon.LogDebug(fmt.Sprintf("[handleClientTCPReceive goroutine] Start. Session(%d)", sessionIndex))
 
 	defer pktRecvfunc.AddNetMsgOnCloseFunc(sessionIndex)
 	//handleTCPReceive에서 패닉이 발생하면 여기에서 접속을 끊도록 한다. 일반적인 접속 종료이면 호출만 될 뿐이다.
 	defer session.closeSocket(sessionCloseRecvGoroutineEnd)
 	defer scommon.PrintPanicStack()
 
-	err := session.handleTCPReceive(maxPacketSize, pktRecvfunc)
+	err := session.handleTCPReceive(config.MaxPacketSize, pktRecvfunc)
 	session.closeSocket(err)
 
 	scommon.LogDebug(fmt.Sprintf("[handleClientTCPReceive goroutine] End. Session(%d)", sessionIndex))

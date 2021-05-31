@@ -11,23 +11,12 @@ type ringBuffer struct {
 	_readCursor  int
 }
 
-type ringbufferErr int
-
-const (
-	err_ringbuffer_none = 0
-	err_ringbuffer_less_zero = 1
-	err_ringbuffer_too_small = 2
-)
 
 // 링버퍼를 한바퀴 돌 때 앞에 데이터를 다 사용했는지 체크 하지 않는다. 즉 낙관적이다
 // 그래서 버퍼의 크기(maxSize)는 꽤 넉넉해야 한다.
-func newRingBuffer(maxSize int, maxPacketSize int) (*ringBuffer, ringbufferErr) {
-	if maxSize <= 0 {
-		return nil, err_ringbuffer_less_zero
-	}
-
-	if maxSize < maxPacketSize {
-		return nil, err_ringbuffer_too_small
+func newRingBuffer(maxSize int, maxPacketSize int) *ringBuffer {
+	if maxSize <= 0 || maxSize < maxPacketSize {
+		return nil
 	}
 
 	b := &ringBuffer{
@@ -38,7 +27,7 @@ func newRingBuffer(maxSize int, maxPacketSize int) (*ringBuffer, ringbufferErr) 
 		_writeCursor: 0,
 		_readCursor: 0,
 	}
-	return b, err_ringbuffer_none
+	return b
 }
 
 func (b *ringBuffer) reset() {

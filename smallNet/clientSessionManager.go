@@ -60,13 +60,13 @@ func (mgr *tcpClientSessionManager) forceDisconnectClient(sessionIndex int) {
 	session.closeSocket(sessionCloseForce)
 }
 
-func (mgr *tcpClientSessionManager) disablePacketProcessClient(sessionIndex int) {
+func (mgr *tcpClientSessionManager) setDisablePacketProcessClient(sessionIndex int) {
 	session, result := mgr.findSession(sessionIndex)
 	if result == false || session.isEnableSend() == false {
 		return
 	}
 
-	session.disablePacketProcess()
+	session.setDisablePacketProcess()
 }
 
 func (mgr *tcpClientSessionManager) setDisableSend(sessionIndex int) {
@@ -75,7 +75,7 @@ func (mgr *tcpClientSessionManager) setDisableSend(sessionIndex int) {
 	}
 }
 
-func (mgr *tcpClientSessionManager) SetEnableSend(sessionIndex int) {
+func (mgr *tcpClientSessionManager) setEnableSend(sessionIndex int) {
 	if session, result := mgr.findSession(sessionIndex); result {
 		session.setEnableSend()
 	}

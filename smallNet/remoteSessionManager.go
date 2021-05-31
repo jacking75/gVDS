@@ -26,7 +26,7 @@ type tcpServerSessionManager struct {
 	_sessionList          []tcpServerSessionInfo // 멀티스레드에서 호출된다
 }
 
-//TODO 사용할 때는 코드 수정이 필요
+
 func newServerSessionManager(config NetworkConfig,
 							pktRecvFunc PacketReceivceFunctors) *tcpServerSessionManager {
 	sessionMgr := new(tcpServerSessionManager)

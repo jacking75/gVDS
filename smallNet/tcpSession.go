@@ -12,10 +12,10 @@ type tcpSession struct {
 	_ip          net.IP
 	_tcpConn     *net.TCPConn
 
-	_isTcpConnected                 bool // tcp 연결여부
-	_isEnableSend                   bool // send 가능 여부
-	_isEnablePacketProcess          bool // 패킷 처리 가능 여부
-	_isClientSession                bool // 클라이언트 세션 여부
+	_isConnected           bool // tcp 연결여부
+	_isEnableSend          bool // send 가능 여부
+	_isEnablePacketProcess bool // 패킷 처리 가능 여부
+	_isClientSession       bool // 클라이언트 세션 여부
 
 	_recvBuffer *ringBuffer
 }
@@ -35,12 +35,9 @@ func (session *tcpSession) initialize(index int,
 
 // 받기, 보내기 모두 링버퍼를 사용하도록 한다
 func (session *tcpSession) initRingBuffer(config NetworkConfig) sessionError {
-	var buffErr ringbufferErr
-
-	recvPacketRingBufferMaxSize := config.RecvPacketRingBufferMaxSize
-	session._recvBuffer, buffErr = newRingBuffer(recvPacketRingBufferMaxSize, config.MaxPacketSize)
-	if buffErr != err_ringbuffer_none {
-		scommon.LogError(fmt.Sprintf("[initRingBuffer] Recv NewPacketRingBuffer. Session(%d), %d", session.getIndex(), buffErr))
+	session._recvBuffer = newRingBuffer(config.RecvPacketRingBufferMaxSize, config.MaxPacketSize)
+	if session._recvBuffer == nil {
+		scommon.LogError(fmt.Sprintf("[initRingBuffer] Recv NewPacketRingBuffer. Session(%d)", session.getIndex()))
 		return ringBufferRecvInitFail
 	}
 
@@ -51,7 +48,6 @@ func (session *tcpSession) onConnect(conn *net.TCPConn) {
 	host, _, err := net.SplitHostPort(conn.RemoteAddr().String())
 	if err != nil {
 		scommon.LogError(fmt.Sprintf("[onConnect] cannot get remote address. Session( %d ), %v", session.getIndex(), err))
-		return
 	}
 
 	session._tcpConn = conn
@@ -78,14 +74,17 @@ func (session *tcpSession) getSocket() net.Conn {
 	return session._tcpConn
 }
 
-func (session *tcpSession) sendPacket(data []byte) {
+func (session *tcpSession) sendPacket(data []byte) bool {
 	if session.isStateConnect() == false || session._isEnableSend == false {
-		return
+		return false
 	}
 
 	if _, ret := session._tcpConn.Write(data); ret != nil {
 		scommon.LogError(fmt.Sprintf("[sendPacket] Error clientSession sendPacket. Session( %d ), %v", session.getIndex(), ret))
+		return false
 	}
+
+	return true
 }
 
 func (session *tcpSession) closeSocket(err sessionError) {
@@ -99,11 +98,7 @@ func (session *tcpSession) closeSocket(err sessionError) {
 }
 
 func (session *tcpSession) setStateClosed() {
-	session._isTcpConnected = false
-}
-
-func (session *tcpSession) forceTerminateReceiveGoroutine() {
-	session.closeSocket(sessionCloseForceTerminateRecvGoroutine)
+	session._isConnected = false
 }
 
 func (session *tcpSession) setDisableSend() {
@@ -115,14 +110,14 @@ func (session *tcpSession) setEnableSend() {
 }
 
 func (session *tcpSession) isEnableSend() bool {
-	return session._isTcpConnected && session._isEnableSend
+	return session._isConnected && session._isEnableSend
 }
 
 func (session *tcpSession) isEnablePacketProcess() bool {
 	return session._isEnablePacketProcess
 }
 
-func (session *tcpSession) disablePacketProcess() {
+func (session *tcpSession) setDisablePacketProcess() {
 	session._isEnablePacketProcess = false
 }
 
@@ -137,10 +132,10 @@ func (session *tcpSession) settingTCPSocketOption(readBufSize int, writeBufSize 
 }
 
 func (session *tcpSession) isStateConnect() bool {
-	return session._isTcpConnected
+	return session._isConnected
 }
 
 func (session *tcpSession) _setStateConnect() {
-	session._isTcpConnected = true
+	session._isConnected = true
 }
 

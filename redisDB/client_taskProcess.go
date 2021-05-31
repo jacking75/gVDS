@@ -29,7 +29,7 @@ func (c *Client) processTaskReqLogin(reqTask ReqTask) {
 	res.Result = TaskResult_Success
 
 	key := redisKey_UserAuth(req.UserID)
-	val, err := c.rc.Get(key).Result()
+	val, err := c._rc.Get(key).Result()
 	if err != nil {
 		res.Result = TaskResult_EmptyAuth
 	} else {

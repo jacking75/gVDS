@@ -14,23 +14,23 @@ type Conf struct {
 }
 
 type Client struct {
-	rc *redis.Client
+	_rc *redis.Client
 
 	ReqTaskChan chan ReqTask
 
-	workerCount int
-	onDone chan struct{}
+	_workerCount int
+	_onDone      chan struct{}
 
-	funcTaskIDList []int16
-	funcList []func(ReqTask)
+	_funcTaskIDList []int16
+	_funcList       []func(ReqTask)
 }
 
 func (c *Client) Init(conf Conf) bool {
 	c.connect(conf.Address, conf.PoolSize)
 
-	c.workerCount = conf.PoolSize
+	c._workerCount = conf.PoolSize
 	c.ReqTaskChan = make(chan ReqTask, conf.ReqTaskChanCapacity)
-	c.onDone = make(chan struct{})
+	c._onDone = make(chan struct{})
 
 	c.settingPacketFunction()
 
@@ -38,14 +38,14 @@ func (c *Client) Init(conf Conf) bool {
 }
 
 func (c *Client) Start() {
-	for i := 0; i < c.workerCount; i++ {
+	for i := 0; i < c._workerCount; i++ {
 		go c.worker_goroutine()
 	}
 }
 
 func (c *Client) Stop() {
 	fmt.Println("[redisDB.Stop] Start")
-	close(c.onDone)
+	close(c._onDone)
 	time.Sleep(time.Millisecond * 100)
 	fmt.Println("[redisDB.Stop] End")
 }
@@ -58,7 +58,7 @@ LOOP_EXIT:
 		select {
 		case task := <- c.ReqTaskChan:
 			c.processTask(task)
-		case <- c.onDone:
+		case <- c._onDone:
 			break LOOP_EXIT
 		}
 	}
@@ -67,22 +67,22 @@ LOOP_EXIT:
 }
 
 func (c *Client) connect(address string, pool int) {
-	c.rc = redis.NewClient(&redis.Options{
+	c._rc = redis.NewClient(&redis.Options{
 		Addr:     address,
 		PoolSize: pool,
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
 
-	/*if err := c.rc.Ping(); err != nil {
+	/*if err := c._rc.Ping(); err != nil {
 		panic(err)
 	}*/
 }
 
 func (c *Client) getTaskFunc(packetID int16) func(ReqTask) {
-	for i, id := range c.funcTaskIDList {
+	for i, id := range c._funcTaskIDList {
 		if id == packetID {
-			return c.funcList[i]
+			return c._funcList[i]
 		}
 	}
 
@@ -91,15 +91,15 @@ func (c *Client) getTaskFunc(packetID int16) func(ReqTask) {
 
 func (c *Client) settingPacketFunction() {
 	maxFuncListCount := 16
-	c.funcList = make([]func(ReqTask), 0, maxFuncListCount)
-	c.funcTaskIDList = make([]int16, 0, maxFuncListCount)
+	c._funcList = make([]func(ReqTask), 0, maxFuncListCount)
+	c._funcTaskIDList = make([]int16, 0, maxFuncListCount)
 
 	c.addTaskFunction(TaskID_ReqLogin, c.processTaskReqLogin)
 }
 
 func (c *Client) addTaskFunction(packetID int16,	taskFunc func(ReqTask)) {
-	c.funcList = append(c.funcList, taskFunc)
-	c.funcTaskIDList = append(c.funcTaskIDList, packetID)
+	c._funcList = append(c._funcList, taskFunc)
+	c._funcTaskIDList = append(c._funcTaskIDList, packetID)
 }
 
 

@@ -34,10 +34,10 @@ func (svr *echoServer) processNetMsg(netMsg smallNet.NetMsg) {
 		incCount()
 		svr._serverNet.ISendToClient(msg.SessionIndex, msg.Data)
 	case smallNet.NetMsg_Connect:
-		scommon.LogDebug("OnConnect")
+		//scommon.LogDebug("OnConnect")
 
 	case smallNet.NetMsg_Close:
-		scommon.LogDebug("OnClose")
+		//scommon.LogDebug("OnClose")
 
 	default:
 		scommon.LogDebug("[Process_goroutine] none")

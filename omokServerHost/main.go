@@ -24,7 +24,7 @@ func main() {
 	omokServerList := make([]*omokServer.Server, conf.maxGameCount)
 	for i := 0; i < conf.maxGameCount; i++ {
 		omokServ := new(omokServer.Server)
-		omokServ.Init(conf.startTcpPort, conf.omokConf, redisC.ReqTaskChan)
+		omokServ.Init(conf.startTcpPort + i, conf.omokConf, redisC.ReqTaskChan)
 		omokServ.StartServer()
 
 		omokServerList[i] = omokServ

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"scommon"
 	"smallNet"
 )
@@ -28,11 +27,11 @@ func (svr *echoServer) processNetMsg(netMsg smallNet.NetMsg) {
 
 	switch msg.Type {
 	case smallNet.NetMsg_Receive:
-		packetID := peekPacketID(msg.Data)
-		bodySize, _ := peekPacketBody(msg.Data)
+		//packetID := peekPacketID(msg.Data)
+		//bodySize, _ := peekPacketBody(msg.Data)
+		//scommon.LogDebug(fmt.Sprintf("[OnReceive] packetID:%d, bodySize:%d", packetID, bodySize))
 
-		scommon.LogDebug(fmt.Sprintf("[OnReceive] packetID:%d, bodySize:%d", packetID, bodySize))
-
+		incCount()
 		svr._serverNet.ISendToClient(msg.SessionIndex, msg.Data)
 	case smallNet.NetMsg_Connect:
 		scommon.LogDebug("OnConnect")

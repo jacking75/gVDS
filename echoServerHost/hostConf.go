@@ -11,7 +11,7 @@ type hostConf struct {
 	conf echoConf
 }
 
-//-c_maxGameCount=100 -c_startTcpPort=11021 -c_network=tcp4 -c_ipAddress=127.0.0.1
+//-c_maxGameCount=1024 -c_startTcpPort=11021 -c_network=tcp4 -c_ipAddress=127.0.0.1 -c_maxSessionCount=4 -c_maxPacketSize=1024 -c_recvPacketRingBufferMaxSize=8012 -c_maxNetMsgChanBufferCount=128
 func createHostConf() hostConf {
 	var hConf hostConf
 

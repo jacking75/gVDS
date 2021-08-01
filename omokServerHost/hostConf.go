@@ -12,7 +12,6 @@ type hostConf struct {
 	RedisAddress string
 	RedisPoolSize int
 	RedisReqTaskChanCapacity int
-	RedisResTaskChanCapacity int
 
 	omokConf omokServer.OmokConf
 }
@@ -27,7 +26,6 @@ func createHostConf() hostConf {
 	flag.StringVar(&conf.RedisAddress, "c_redisAddress", "127.0.0.1:6379", "string flag")
 	flag.IntVar(&conf.RedisPoolSize, "c_redisPoolSize", 8, "int flag")
 	flag.IntVar(&conf.RedisReqTaskChanCapacity, "c_redisReqTaskChanCapacity", 32, "int flag")
-	flag.IntVar(&conf.RedisResTaskChanCapacity, "c_redisResTaskChanCapacity", 32, "int flag")
 
 	flag.StringVar(&conf.omokConf.Network, "c_network", "tcp4", "string flag")
 	flag.StringVar(&conf.omokConf.IPAddress, "c_ipAddress", "127.0.0.1", "string flag")

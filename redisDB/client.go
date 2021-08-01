@@ -10,7 +10,6 @@ type Conf struct {
 	Address string
 	PoolSize int
 	ReqTaskChanCapacity int
-	ResTaskChanCapacity int
 }
 
 type Client struct {

@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"redisDB"
 
-	"omokServer"
+	"redisDB"
 )
 
 
@@ -16,29 +15,28 @@ func main() {
 	ctx, done := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer done()
 
-	conf := createHostConf()
+	hConf := createHostConf()
 
-	redisC := createRedis(conf)
+	redisC := createRedis(hConf)
 	redisC.Start()
 
-	omokServerList := make([]*omokServer.Server, conf.maxGameCount)
-	for i := 0; i < conf.maxGameCount; i++ {
-		omokServ := new(omokServer.Server)
-		omokServ.Init(conf.startTcpPort + i, conf.omokConf, redisC.ReqTaskChan)
-		omokServ.StartServer()
+	echoServerList := make([]*echoServer, hConf.maxGameCount)
+	for i := 0; i < hConf.maxGameCount; i++ {
+		svr := new(echoServer)
+		svr.Init(hConf.startTcpPort, hConf, redisC.ReqTaskChan)
+		svr.StartServer()
 
-		omokServerList[i] = omokServ
+		echoServerList[i] = svr
 	}
 
 	fmt.Println("Waiting for SIGINT.")
 	<-ctx.Done()
 
 
-	for i := 0; i < conf.maxGameCount; i++ {
-		omokServerList[i].Stop()
+	for i := 0; i < hConf.maxGameCount; i++ {
+		echoServerList[i].Stop()
 	}
 
-	redisC.Stop()
 
 	fmt.Println("END")
 }

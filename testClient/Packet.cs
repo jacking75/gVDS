@@ -29,7 +29,7 @@ namespace omokClient
             List<byte> dataSource = new List<byte>();
             dataSource.AddRange(BitConverter.GetBytes((Int16)PacketDef.PACKET_HEADER_SIZE));
             dataSource.AddRange(BitConverter.GetBytes((Int16)packetID));
-            dataSource.AddRange(BitConverter.GetBytes((SByte)0));
+            dataSource.Add(0);
             return dataSource.ToArray();
         }
     }
@@ -50,7 +50,7 @@ namespace omokClient
             List<byte> dataSource = new List<byte>();
             dataSource.AddRange(BitConverter.GetBytes((Int16)packetSize));
             dataSource.AddRange(BitConverter.GetBytes((Int16)packetID));
-            dataSource.AddRange(BitConverter.GetBytes((SByte)0));
+            dataSource.Add(0);
             dataSource.AddRange(userID);
             dataSource.AddRange(BitConverter.GetBytes(AuthCode));
             return dataSource.ToArray();
